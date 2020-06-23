@@ -1,0 +1,159 @@
+CREATE DATABASE  IF NOT EXISTS `BarBeerDrinkerSample` /*!40100 DEFAULT CHARACTER SET latin1 */;
+USE `BarBeerDrinkerSample`;
+-- MySQL dump 10.13  Distrib 5.7.17, for macos10.12 (x86_64)
+-- database-4-joe.cr5cf4b6w6l2.us-east-2.rds.amazonaws.com:3306
+-- Host: database-4-joe.cr5cf4b6w6l2.us-east-2.rds.amazonaws.com:3306   Database: BarBeerDrinkerSample
+-- ------------------------------------------------------
+-- Server version	5.6.35-log
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+
+--
+-- Table structure for table `bars`
+--
+/* start joe*/
+DROP TABLE IF EXISTS users;
+CREATE TABLE users(
+	username VARCHAR(50),
+    password VARCHAR(50),
+    name VARCHAR(50),
+    representative INTEGER DEFAULT 0,
+    PRIMARY KEY(username)
+);
+
+DROP TABLE IF EXISTS airport;
+CREATE TABLE airport(
+	airportID VARCHAR(50),
+    name VARCHAR(100),
+    PRIMARY KEY(airportID)
+);
+DROP TABLE IF EXISTS days;
+CREATE TABLE days(
+	dayNumber VARCHAR(1),
+	PRIMARY KEY(dayNumber)
+);
+
+DROP TABLE IF EXISTS airline;
+CREATE TABLE airline(
+	airlineID VARCHAR(15),
+    name VARCHAR(30),
+    PRIMARY KEY(airlineID)
+);
+DROP TABLE IF EXISTS ticket;
+CREATE TABLE ticket(
+	ticketNumber VARCHAR(10),
+    roundTrip VARCHAR(1),
+    bookingFee DECIMAL(19,4),
+    totalFare DECIMAL(19,4),
+    issueDate DATE,
+    username VARCHAR(50),
+    PRIMARY KEY(ticketNumber),
+    FOREIGN KEY(username) REFERENCES users(username)
+);
+
+DROP TABLE IF EXISTS aircraft;
+CREATE TABLE aircraft(
+	aircraftID VARCHAR(50),
+    name VARCHAR(100),
+    airlineID VARCHAR(15),
+    PRIMARY KEY(aircraftID), 
+    FOREIGN KEY(airlineID) REFERENCES airline(airlineID)
+);
+DROP TABLE IF EXISTS seats;
+CREATE TABLE seats(
+	aircraftID VARCHAR(50),
+    seatNumber VARCHAR(3),
+    seatClass VARCHAR(15),
+    numTotalSeats VARCHAR(3),
+    numTotalFirstSeats VARCHAR(3),
+    numTotalBusinessSeats VARCHAR(3),
+    numTotalEconomySeats VARCHAR(3),
+    PRIMARY KEY(aircraftID,seatNumber),
+    FOREIGN KEY(aircraftID) REFERENCES aircraft(aircraftID)
+);
+DROP TABLE IF EXISTS flights;
+CREATE TABLE flights(
+	airlineID VARCHAR(15),
+    flightNumber VARCHAR(10),
+    departAirportID VARCHAR(50),
+    destinationAirportID VARCHAR(50),
+    aircraftID VARCHAR(50),
+    type VARCHAR(15), -- international or domestic
+    departTime TIME,
+    arriveTime TIME,
+    economyFare DECIMAL(19,4),
+    businessFare DECIMAL(19,4),
+    firstFare DECIMAL(19,4),
+    
+    PRIMARY KEY(airlineID, flightNumber),
+    
+    FOREIGN KEY(airlineID) REFERENCES airline(airlineID),
+    FOREIGN KEY(departAirportID) REFERENCES airport(airportID),
+    FOREIGN KEY(destinationAirportID) REFERENCES airport(airportID),
+    FOREIGN KEY(aircraftID) REFERENCES aircraft(aircraftID)
+
+);
+
+DROP TABLE IF EXISTS trip;
+CREATE TABLE trip(
+	-- needs primary keys of flights
+    	airlineID VARCHAR(15),
+		flightNumber VARCHAR(10),
+        aircraftID VARCHAR(50),
+        ticketNumber VARCHAR(10), -- ticket
+        assignedSeatNumber VARCHAR(3),
+        
+        meal VARCHAR(20),
+        tripDate DATE,
+        
+        PRIMARY KEY(airlineID,flightNumber,ticketNumber),
+        FOREIGN KEY(airlineID,flightNumber) REFERENCES flights(airlineID,flightNumber),
+        FOREIGN KEY(ticketNumber) REFERENCES ticket(ticketNumber),
+       FOREIGN KEY(aircraftID,assignedSeatNumber) REFERENCES seats(aircraftID, seatNumber) 
+);
+
+DROP TABLE IF EXISTS fliesOn;
+CREATE TABLE fliesOn(
+	dayNumber VARCHAR(1),
+    airlineID VARCHAR(15),
+    flightNumber VARCHAR(10),
+    PRIMARY KEY(dayNumber,airlineID,flightNumber),
+    FOREIGN KEY(dayNumber) REFERENCES days(dayNumber),
+    FOREIGN KEY(airlineID, flightNumber) REFERENCES flights(airlineID, flightNumber)
+);
+
+DROP PROCEDURE IF EXISTS populate_days;
+DELIMITER //
+	CREATE PROCEDURE populate_days()
+    BEGIN
+		DECLARE startDate VARCHAR(1) DEFAULT '1';
+        DECLARE endDate VARCHAR(1) DEFAULT '7';
+        WHILE startDate <= endDate DO
+				INSERT INTO days(dayNumber) VALUES(startDate);
+                SET startDate = startDate + 1;
+                -- will this work?
+               -- SET startDate = DATE_ADD(startDate, INTERVAL 1 DAY);
+                -- DATE_ADD(startDate, INTERVAL 1 DAY);
+        END WHILE;
+    END;
+// 
+/*
+CREATE PROCEDURE dowhile()
+BEGIN
+	-- YYYY-MM-DD
+	DECLARE startDate DATE DEFAULT '2019-01-01';
+END; */
+/*end joe*/
+
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
