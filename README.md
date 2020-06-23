@@ -1,0 +1,2 @@
+# Travel-Reservation-System
+A system that allows customers to use the web to browse/search the contents of the database (the part that we want the customer to see) and to make flight reservations over the web. Not only does the web allows users to make both domestic and international reservations, but it also allows users to query the database for available flights (direct or indirect) between a pair of cities for a given date and "approximate" time.
